@@ -1,7 +1,7 @@
 INSERT OVERWRITE TABLE sales_forecast_prep
 SELECT 
-    EXTRACT(year FROM s.sale_date) as sales_year,  -- Changed from 'year' to 'sales_year'
-    EXTRACT(month FROM s.sale_date) as sales_month, -- Changed from 'month' to 'sales_month'
+    EXTRACT(year FROM s.sale_date) as sales_year,
+    EXTRACT(month FROM s.sale_date) as sales_month,
     p.category,
     SUM(s.quantity * s.price) as revenue,
     LAG(SUM(s.quantity * s.price), 1) OVER (
@@ -15,14 +15,14 @@ SELECT
     SUM(s.quantity) as units_sold,
     COUNT(DISTINCT s.customer_id) as unique_customers,
     (SELECT AVG(s2.price) 
-     FROM sales_raw s2 
-     WHERE s2.product_name IN (SELECT name FROM products_raw WHERE category = p.category)
+     FROM raw.sales_raw s2 
+     WHERE s2.product_name IN (SELECT name FROM raw.products_raw WHERE category = p.category)
      AND EXTRACT(year FROM s2.sale_date) = EXTRACT(year FROM s.sale_date)
      AND EXTRACT(month FROM s2.sale_date) = EXTRACT(month FROM s.sale_date)
     ) as avg_price,
     (SELECT COUNT(DISTINCT s3.sale_date) 
-     FROM sales_raw s3 
-     WHERE s3.product_name IN (SELECT name FROM products_raw WHERE category = p.category)
+     FROM raw.sales_raw s3 
+     WHERE s3.product_name IN (SELECT name FROM raw.products_raw WHERE category = p.category)
      AND EXTRACT(year FROM s3.sale_date) = EXTRACT(year FROM s.sale_date)
      AND EXTRACT(month FROM s3.sale_date) = EXTRACT(month FROM s.sale_date)
     ) as selling_days,
@@ -32,8 +32,8 @@ SELECT
         WHEN EXTRACT(month FROM s.sale_date) IN (3,4,5) THEN 'Spring'
         ELSE 'Regular'
     END as season
-FROM sales_raw s
-JOIN products_raw p ON s.product_name = p.name
+FROM raw.sales_raw s
+JOIN raw.products_raw p ON s.product_name = p.name
 GROUP BY 
     EXTRACT(year FROM s.sale_date),
     EXTRACT(month FROM s.sale_date),
