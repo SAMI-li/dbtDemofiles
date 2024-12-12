@@ -1,45 +1,45 @@
-{# Inefficient sales forecasting preparation with redundant calculations #}
+{# Inefficient sales forecasting preparation with redundant calculations - Dremio compatible #}
 INSERT OVERWRITE TABLE sales_forecast_prep
 SELECT 
-    EXTRACT(YEAR FROM s.sale_date) as year,
-    EXTRACT(MONTH FROM s.sale_date) as month,
+    EXTRACT(year FROM s.sale_date) as sales_year,  -- Changed from 'year' to 'sales_year'
+    EXTRACT(month FROM s.sale_date) as sales_month, -- Changed from 'month' to 'sales_month'
     p.category,
     SUM(s.quantity * s.price) as revenue,
     LAG(SUM(s.quantity * s.price), 1) OVER (
-        PARTITION BY p.category, EXTRACT(MONTH FROM s.sale_date) 
-        ORDER BY EXTRACT(YEAR FROM s.sale_date)
+        PARTITION BY p.category, EXTRACT(month FROM s.sale_date) 
+        ORDER BY EXTRACT(year FROM s.sale_date)
     ) as prev_year_revenue,
     LAG(SUM(s.quantity * s.price), 12) OVER (
         PARTITION BY p.category 
-        ORDER BY EXTRACT(YEAR FROM s.sale_date), EXTRACT(MONTH FROM s.sale_date)
+        ORDER BY EXTRACT(year FROM s.sale_date), EXTRACT(month FROM s.sale_date)
     ) as last_year_same_month,
     SUM(s.quantity) as units_sold,
     COUNT(DISTINCT s.customer_id) as unique_customers,
     (SELECT AVG(s2.price) 
      FROM sales_raw s2 
      WHERE s2.product_name IN (SELECT name FROM products_raw WHERE category = p.category)
-     AND EXTRACT(YEAR FROM s2.sale_date) = EXTRACT(YEAR FROM s.sale_date)
-     AND EXTRACT(MONTH FROM s2.sale_date) = EXTRACT(MONTH FROM s.sale_date)
+     AND EXTRACT(year FROM s2.sale_date) = EXTRACT(year FROM s.sale_date)
+     AND EXTRACT(month FROM s2.sale_date) = EXTRACT(month FROM s.sale_date)
     ) as avg_price,
     (SELECT COUNT(DISTINCT s3.sale_date) 
      FROM sales_raw s3 
      WHERE s3.product_name IN (SELECT name FROM products_raw WHERE category = p.category)
-     AND EXTRACT(YEAR FROM s3.sale_date) = EXTRACT(YEAR FROM s.sale_date)
-     AND EXTRACT(MONTH FROM s3.sale_date) = EXTRACT(MONTH FROM s.sale_date)
+     AND EXTRACT(year FROM s3.sale_date) = EXTRACT(year FROM s.sale_date)
+     AND EXTRACT(month FROM s3.sale_date) = EXTRACT(month FROM s.sale_date)
     ) as selling_days,
     CASE 
-        WHEN EXTRACT(MONTH FROM s.sale_date) IN (11,12) THEN 'Holiday'
-        WHEN EXTRACT(MONTH FROM s.sale_date) IN (6,7,8) THEN 'Summer'
-        WHEN EXTRACT(MONTH FROM s.sale_date) IN (3,4,5) THEN 'Spring'
+        WHEN EXTRACT(month FROM s.sale_date) IN (11,12) THEN 'Holiday'
+        WHEN EXTRACT(month FROM s.sale_date) IN (6,7,8) THEN 'Summer'
+        WHEN EXTRACT(month FROM s.sale_date) IN (3,4,5) THEN 'Spring'
         ELSE 'Regular'
     END as season
 FROM sales_raw s
 JOIN products_raw p ON s.product_name = p.name
 GROUP BY 
-    EXTRACT(YEAR FROM s.sale_date),
-    EXTRACT(MONTH FROM s.sale_date),
+    EXTRACT(year FROM s.sale_date),
+    EXTRACT(month FROM s.sale_date),
     p.category
 ORDER BY 
     p.category,
-    year,
-    month;
+    sales_year,
+    sales_month;
