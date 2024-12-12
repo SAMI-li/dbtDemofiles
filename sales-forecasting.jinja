@@ -1,4 +1,3 @@
-{# Inefficient sales forecasting preparation with redundant calculations - Dremio compatible #}
 INSERT OVERWRITE TABLE sales_forecast_prep
 SELECT 
     EXTRACT(year FROM s.sale_date) as sales_year,  -- Changed from 'year' to 'sales_year'
