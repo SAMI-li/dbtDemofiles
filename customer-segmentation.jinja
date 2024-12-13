@@ -1,3 +1,4 @@
+{# Customer segmentation with Dremio compatible date functions #}
 INSERT OVERWRITE TABLE customer_segments
 SELECT 
     c.customer_id,
@@ -12,14 +13,13 @@ SELECT
     (SELECT COUNT(DISTINCT EXTRACT(MONTH FROM s5.sale_date)) 
      FROM raw.sales_raw s5 
      WHERE s5.customer_id = c.customer_id 
-     AND s5.sale_date >= DATE_SUB(CURRENT_DATE, INTERVAL 12 MONTH)) as active_months,
-    (SELECT STRING_AGG(DISTINCT p.category, ', ') 
+     AND s5.sale_date >= ADD_MONTHS(CURRENT_DATE, -12)) as active_months,
+    (SELECT LISTAGG(DISTINCT p.category, ', ') 
      FROM raw.sales_raw s6 
      JOIN raw.products_raw p ON s6.product_name = p.name 
      WHERE s6.customer_id = c.customer_id) as preferred_categories,
     CASE 
-        WHEN DATEDIFF(CURRENT_DATE, 
-            (SELECT MAX(s7.sale_date) FROM raw.sales_raw s7 WHERE s7.customer_id = c.customer_id)) > 90 
+        WHEN (CURRENT_DATE - (SELECT MAX(s7.sale_date) FROM raw.sales_raw s7 WHERE s7.customer_id = c.customer_id)) > 90 
         THEN 'Churned'
         ELSE 'Active'
     END as customer_status,
