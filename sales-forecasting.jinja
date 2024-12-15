@@ -1,4 +1,3 @@
-{# Simplified sales forecasting without date functions #}
 INSERT OVERWRITE TABLE sales_forecast_prep
 SELECT 
     EXTRACT(year FROM s.sale_date) as sales_year,
