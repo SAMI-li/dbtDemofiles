@@ -2,20 +2,17 @@ INSERT OVERWRITE TABLE inventory_aging
 SELECT 
     p.product_id,
     p.name,
-    p.category as product_category, 
-    (SELECT MAX(s1.sale_date) FROM raw.sales_raw s1 WHERE s1.product_name = p.name) as last_sale_date,
+    p.category AS product_category, 
+    (SELECT MAX(s1.sale_date) 
+     FROM raw.sales_raw s1 
+     WHERE s1.product_name = p.name) AS last_sale_date,
     (SELECT SUM(s3.quantity) 
-     FROM raw.sales_raw s3 
-     WHERE s3.product_name = p.name) as total_sales,
+     FROM raw.sales_raw s3  
+     WHERE s3.product_name = p.name) AS total_sales,
     (SELECT AVG(s4.quantity) 
      FROM raw.sales_raw s4 
-     WHERE s4.product_name = p.name) as avg_sales,
+     WHERE s4.product_name = p.name) AS avg_sales,
     (SELECT COUNT(DISTINCT s8.customer_id) 
      FROM raw.sales_raw s8 
-     WHERE s8.product_name = p.name
-    ) as total_unique_customers,
-    (SELECT LISTAGG(DISTINCT c.name, ', ') 
-     FROM raw.sales_raw s9 
-     JOIN raw.customers_raw c ON s9.customer_id = c.customer_id 
-     WHERE s9.product_name = p.name) as buyers
+     WHERE s8.product_name = p.name) AS total_unique_customers
 FROM raw.products_raw p;
