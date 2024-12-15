@@ -1,8 +1,8 @@
-INSERT OVERWRITE TABLE sales_forecast_prep
+INSERT OVERWRITE TABLE sales_forecasting
 SELECT 
    EXTRACT(year FROM s.sale_date) AS sales_year,
    EXTRACT(month FROM s.sale_date) AS sales_month,
-   p.category AS product_category,  
+   p.category AS product_category,  -- Changed column alias to avoid ambiguity
    SUM(s.quantity * s.price) AS revenue,
    LAG(SUM(s.quantity * s.price), 1) OVER (
        PARTITION BY p.category, EXTRACT(month FROM s.sale_date) 
