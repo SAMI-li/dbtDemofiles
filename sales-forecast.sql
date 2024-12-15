@@ -1,4 +1,4 @@
-INSERT OVERWRITE TABLE sales_forecasting
+INSERT OVERWRITE TABLE sales_forecast
 SELECT 
    EXTRACT(year FROM s.sale_date) AS sales_year,
    EXTRACT(month FROM s.sale_date) AS sales_month,
