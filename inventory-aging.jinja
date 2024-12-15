@@ -2,7 +2,7 @@ INSERT OVERWRITE TABLE inventory_aging
 SELECT 
     p.product_id,
     p.name,
-    p.category as product_category,  -- Fixed ambiguous column
+    p.category as product_category, 
     (SELECT MAX(s1.sale_date) FROM raw.sales_raw s1 WHERE s1.product_name = p.name) as last_sale_date,
     (SELECT SUM(s3.quantity) 
      FROM raw.sales_raw s3 
