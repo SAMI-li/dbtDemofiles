@@ -2,7 +2,7 @@ INSERT OVERWRITE TABLE sales_forecast
 SELECT 
    EXTRACT(year FROM s.sale_date) AS sales_year,
    EXTRACT(month FROM s.sale_date) AS sales_month,
-   p.category AS product_category,  -- Changed column alias to avoid ambiguity
+   p.category AS product_category,  
    SUM(s.quantity * s.price) AS revenue,
    LAG(SUM(s.quantity * s.price), 1) OVER (
        PARTITION BY p.category, EXTRACT(month FROM s.sale_date) 
@@ -12,7 +12,6 @@ SELECT
        PARTITION BY p.category 
        ORDER BY EXTRACT(year FROM s.sale_date), EXTRACT(month FROM s.sale_date)
    ) AS last_year_same_month,
-   SUM(s.quantity) AS units_sold,
    COUNT(DISTINCT s.customer_id) AS unique_customers,
    (
        SELECT AVG(s2.price) 
@@ -33,6 +32,6 @@ GROUP BY
    EXTRACT(month FROM s.sale_date),
    p.category
 ORDER BY 
-   product_category,  -- Updated ORDER BY to use new alias
+   product_category, 
    sales_year,
    sales_month;
